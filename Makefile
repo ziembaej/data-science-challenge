@@ -1,4 +1,4 @@
-.PHONY: fetch jupyter
+.PHONY: fetch jupyter environment
 
 export PIPENV_VENV_IN_PROJECT=1
 export PYTHONPATH := $(CURDIR)
@@ -14,23 +14,23 @@ BUCKET = tagup-challenge
 #################################################################################
 
 EXECUTABLES = pipenv aws
+## Set up python interpreter environment
 environment: .venv
 	$(foreach x,$(EXECUTABLES),\
 			$(if $(shell which $(x)),,\
 			$(error "No '$(x)' found, build will fail. Please read README.md.")))
 
 ## Run jupyter notebook server
-jupyter: fetch .venv
+jupyter: fetch environment
 	pipenv run jupyter notebook 
-
-## Set up python interpreter environment
-.venv: Pipfile
-	pipenv install --dev
 
 ## Download data from S3
 fetch:
 	aws s3 sync s3://$(BUCKET)/train data/train
 	aws s3 sync s3://$(BUCKET)/test data/test
+
+.venv: Pipfile
+	pipenv install --dev
 
 #################################################################################
 # Self Documenting Commands                                                     #
